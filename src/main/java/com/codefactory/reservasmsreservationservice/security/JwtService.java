@@ -1,4 +1,4 @@
-package com.codefactory.reservasmsreservationservice.service;
+package com.codefactory.reservasmsreservationservice.security;
 
 import io.jsonwebtoken.Claims;
 import java.util.function.Function;

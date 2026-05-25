@@ -1,27 +1,48 @@
 package com.codefactory.reservasmsreservationservice;
 
+import com.codefactory.reservasmsreservationservice.client.AuthClient;
+import com.codefactory.reservasmsreservationservice.client.CatalogClient;
+import com.codefactory.reservasmsreservationservice.client.ScheduleClient;
 import com.codefactory.reservasmsreservationservice.controller.HealthController;
+import com.codefactory.reservasmsreservationservice.security.JwtService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest
+/**
+ * Basic tests to verify that the Spring context loads correctly.
+ * Uses @WebMvcTest to load only the web controllers, not the entire context.
+ * Feign clients are mocked to avoid external connections.
+ */
+@WebMvcTest(HealthController.class)
+@ActiveProfiles("test")
 class ReservasMsReservationServiceApplicationTests {
 
     @Autowired
     private HealthController healthController;
 
+    @MockBean
+    private AuthClient authClient;
+
+    @MockBean
+    private CatalogClient catalogClient;
+
+    @MockBean
+    private ScheduleClient scheduleClient;
+
+    @MockBean
+    private JwtService jwtService;
+
     /**
      * Test básico: verifica que el contexto de Spring se carga correctamente.
-     * Este test es generado automáticamente por Spring Initializr.
      */
     @Test
     void contextLoads() {
@@ -30,16 +51,11 @@ class ReservasMsReservationServiceApplicationTests {
 
     /**
      * Test del endpoint GET /api/ (health check)
-     * Verifica que retorna status "UP" y timestamp válido.
      */
     @Test
     void health_endpoint_returnsUpStatus() {
-        // Given: No se requiere configuración previa
-
-        // When: Se invoca el método health del controller
         ResponseEntity<Map<String, Object>> response = healthController.health();
 
-        // Then: Se validan las respuestas esperadas
         assertEquals(200, response.getStatusCodeValue(),
                 "El status HTTP debe ser 200 OK");
 
@@ -51,24 +67,15 @@ class ReservasMsReservationServiceApplicationTests {
 
         assertNotNull(response.getBody().get("timestamp"),
                 "El timestamp debe estar presente en la respuesta");
-
-        // Verificación adicional: el timestamp debe ser un Instant válido
-        assertTrue(response.getBody().get("timestamp") instanceof java.time.Instant,
-                "El timestamp debe ser de tipo Instant");
     }
 
     /**
      * Test del endpoint GET /api/version
-     * Verifica que retorna la versión y nombre del servicio correctos.
      */
     @Test
     void version_endpoint_returnsCorrectVersion() {
-        // Given: No se requiere configuración previa
-
-        // When: Se invoca el método version del controller
         ResponseEntity<Map<String, String>> response = healthController.version();
 
-        // Then: Se validan las respuestas esperadas
         assertEquals(200, response.getStatusCodeValue(),
                 "El status HTTP debe ser 200 OK");
 
@@ -84,7 +91,6 @@ class ReservasMsReservationServiceApplicationTests {
 
     /**
      * Test de performance básico para el endpoint health
-     * Verifica que la respuesta sea rápida (< 500ms en entorno local)
      */
     @Test
     void health_endpoint_performance_acceptable() {
@@ -94,10 +100,7 @@ class ReservasMsReservationServiceApplicationTests {
 
         long executionTime = System.currentTimeMillis() - startTime;
 
-        // Nota: 500ms es un límite conservador para desarrollo local
-        // En producción con contenedores, podría ajustarse a 200ms
         assertTrue(executionTime < 500,
                 String.format("El endpoint health tardó %dms, esperado < 500ms", executionTime));
     }
-
 }

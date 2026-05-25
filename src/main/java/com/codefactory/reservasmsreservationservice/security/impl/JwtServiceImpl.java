@@ -1,6 +1,6 @@
-package com.codefactory.reservasmsreservationservice.service.impl;
+package com.codefactory.reservasmsreservationservice.security.impl;
 
-import com.codefactory.reservasmsreservationservice.service.JwtService;
+import com.codefactory.reservasmsreservationservice.security.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
