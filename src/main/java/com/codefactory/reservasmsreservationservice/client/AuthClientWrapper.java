@@ -1,5 +1,6 @@
 package com.codefactory.reservasmsreservationservice.client;
 
+import com.codefactory.reservasmsreservationservice.config.CacheConfig;
 import com.codefactory.reservasmsreservationservice.dto.external.ExternalClientDTO;
 import com.codefactory.reservasmsreservationservice.dto.external.ExternalProviderDTO;
 import com.codefactory.reservasmsreservationservice.exception.ExternalServiceException;
@@ -7,13 +8,15 @@ import com.codefactory.reservasmsreservationservice.exception.ResourceNotFoundEx
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
 /**
  * Wrapper para el AuthClient que maneja errores de forma centralizada.
- * Proporciona métodos de conveniencia con manejo de excepciones.
+ * Proporciona métodos de conveniencia con manejo de excepciones y caching.
  */
 @Component
 @RequiredArgsConstructor
@@ -24,16 +27,18 @@ public class AuthClientWrapper {
 
     /**
      * Obtiene un cliente o lanza excepción si no existe.
+     * Resultados cacheados por 5 minutos para evitar llamadas repetidas.
      */
+    @Cacheable(value = CacheConfig.CLIENT_CACHE, key = "#clientId")
     public ExternalClientDTO getClientOrThrow(UUID clientId) {
         try {
-            log.debug("Consultando cliente {} en auth-service", clientId);
+            log.debug("Consultando cliente {} en auth-service (cache miss)", clientId);
             var response = authClient.getClientById(clientId);
             log.debug("Respuesta de auth-service: status={}, body={}", response.getStatusCode(), response.getBody());
-            
+
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 ExternalClientDTO cliente = response.getBody();
-                log.debug("Cliente encontrado: id={}, nombre={}, activo={}", 
+                log.debug("Cliente encontrado: id={}, nombre={}, activo={}",
                         cliente.getId(), cliente.getNombre(), cliente.isActivo());
                 return cliente;
             }
@@ -49,13 +54,15 @@ public class AuthClientWrapper {
 
     /**
      * Obtiene un proveedor o lanza excepción si no existe.
+     * Resultados cacheados por 5 minutos para evitar llamadas repetidas.
      */
+    @Cacheable(value = CacheConfig.PROVIDER_CACHE, key = "#providerId")
     public ExternalProviderDTO getProviderOrThrow(UUID providerId) {
         try {
-            log.debug("Consultando proveedor {} en auth-service", providerId);
+            log.debug("Consultando proveedor {} en auth-service (cache miss)", providerId);
             var response = authClient.getProviderById(providerId);
             log.debug("Respuesta de auth-service: status={}, body={}", response.getStatusCode(), response.getBody());
-            
+
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 return response.getBody();
             }
@@ -99,5 +106,21 @@ public class AuthClientWrapper {
         if (!provider.isActivo()) {
             throw new ResourceNotFoundException("Proveedor no está activo: " + providerId);
         }
+    }
+
+    /**
+     * Invalida cache de cliente cuando se actualiza.
+     */
+    @CacheEvict(value = CacheConfig.CLIENT_CACHE, key = "#clientId")
+    public void evictClientCache(UUID clientId) {
+        log.debug("Invalidando cache de cliente: {}", clientId);
+    }
+
+    /**
+     * Invalida cache de proveedor cuando se actualiza.
+     */
+    @CacheEvict(value = CacheConfig.PROVIDER_CACHE, key = "#providerId")
+    public void evictProviderCache(UUID providerId) {
+        log.debug("Invalidando cache de proveedor: {}", providerId);
     }
 }

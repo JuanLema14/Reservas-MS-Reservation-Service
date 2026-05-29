@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -15,6 +16,7 @@ import org.thymeleaf.context.Context;
 /**
  * Implementation of EmailService.
  * Sends reservation-related emails using JavaMailSender and Thymeleaf templates.
+ * Email sending is ASYNC to not block the main request thread.
  */
 @Service
 @ConditionalOnBean(name = "javaMailSender")
@@ -41,9 +43,10 @@ public class EmailServiceImpl implements EmailService {
     private String frontendUrl;
 
     @Override
+    @Async("emailExecutor")
     public void sendReservationConfirmationEmail(String to, String clienteNombre, String servicioNombre, String fechaHora) {
-        log.info("Intentando enviar email de confirmacion a: {}", to);
-        log.debug("Email config - host: {}, port: {}, username: {}", 
+        log.info("[ASYNC] Iniciando envio de email de confirmacion a: {}", to);
+        log.debug("[ASYNC] Email config - host: {}, port: {}, username: {}",
                 emailHost, emailPort, emailUsername);
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
@@ -63,18 +66,20 @@ public class EmailServiceImpl implements EmailService {
             String htmlContent = templateEngine.process("reservation-confirmation", context);
             helper.setText(htmlContent, true);
 
-            log.info("Enviando email de confirmacion...");
+            log.info("[ASYNC] Enviando email de confirmacion...");
             javaMailSender.send(message);
-            log.info("Email de confirmacion enviado exitosamente a: {}", to);
+            log.info("[ASYNC] Email de confirmacion enviado exitosamente a: {}", to);
 
         } catch (Exception e) {
-            log.error("Error al enviar email de confirmacion a: {}", to, e);
+            log.error("[ASYNC] Error al enviar email de confirmacion a: {}", to, e);
             // Don't throw - just log the error to not fail the reservation
         }
     }
 
     @Override
+    @Async("emailExecutor")
     public void sendReservationCancellationEmail(String to, String clienteNombre, String servicioNombre, String fechaHora) {
+        log.info("[ASYNC] Iniciando envio de email de cancelacion a: {}", to);
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -94,16 +99,18 @@ public class EmailServiceImpl implements EmailService {
             helper.setText(htmlContent, true);
 
             javaMailSender.send(message);
-            log.info("Reservation cancellation email sent successfully to: {}", to);
+            log.info("[ASYNC] Email de cancelacion enviado exitosamente a: {}", to);
 
         } catch (Exception e) {
-            log.error("Failed to send reservation cancellation email to: {}", to, e);
-            throw new RuntimeException("Failed to send reservation cancellation email: " + e.getMessage(), e);
+            log.error("[ASYNC] Error al enviar email de cancelacion a: {}", to, e);
+            // Don't throw - just log the error
         }
     }
 
     @Override
+    @Async("emailExecutor")
     public void sendReservationReminderEmail(String to, String clienteNombre, String servicioNombre, String fechaHora) {
+        log.info("[ASYNC] Iniciando envio de email de recordatorio a: {}", to);
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -123,11 +130,11 @@ public class EmailServiceImpl implements EmailService {
             helper.setText(htmlContent, true);
 
             javaMailSender.send(message);
-            log.info("Reservation reminder email sent successfully to: {}", to);
+            log.info("[ASYNC] Email de recordatorio enviado exitosamente a: {}", to);
 
         } catch (Exception e) {
-            log.error("Failed to send reservation reminder email to: {}", to, e);
-            throw new RuntimeException("Failed to send reservation reminder email: " + e.getMessage(), e);
+            log.error("[ASYNC] Error al enviar email de recordatorio a: {}", to, e);
+            // Don't throw - just log the error
         }
     }
 }

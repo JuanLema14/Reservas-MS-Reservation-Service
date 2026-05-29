@@ -13,7 +13,14 @@ import java.util.UUID;
  * Contiene información sobre citas agendadas por clientes con proveedores.
  */
 @Entity
-@Table(name = "reserva")
+@Table(name = "reserva", indexes = {
+        @Index(name = "idx_reserva_cliente_fecha", columnList = "id_cliente, fecha_hora_inicio DESC"),
+        @Index(name = "idx_reserva_proveedor_fecha", columnList = "id_proveedor, fecha_hora_inicio DESC"),
+        @Index(name = "idx_reserva_empleado_fecha", columnList = "id_empleado, fecha_hora_inicio DESC"),
+        @Index(name = "idx_reserva_estado", columnList = "estado"),
+        @Index(name = "idx_reserva_cliente_estado", columnList = "id_cliente, estado"),
+        @Index(name = "idx_reserva_proveedor_estado", columnList = "id_proveedor, estado")
+})
 @Data
 @Builder
 @NoArgsConstructor
