@@ -28,8 +28,8 @@ spec:
     spec:
       containers:
         - name: reservation-service
-          image: reservas-ms-reservation-service:latest
-          imagePullPolicy: Never
+          image: isabedoya/reservas-ms-reservation-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8084
           env:
