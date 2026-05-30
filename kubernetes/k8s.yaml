@@ -1,0 +1,118 @@
+# ========================================
+# MS-RESERVATION-SERVICE - Kubernetes Configuration
+# ========================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: reservation-service-config
+  namespace: default
+data:
+  SPRING_PROFILE: "prod"
+  SERVER_PORT: "8084"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reservation-service
+  labels:
+    app: reservation-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: reservation-service
+  template:
+    metadata:
+      labels:
+        app: reservation-service
+    spec:
+      containers:
+        - name: reservation-service
+          image: reservas-ms-reservation-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8084
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: reservation-service-secrets
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: reservation-service-secrets
+                  key: DB_PASSWORD
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: reservation-service-secrets
+                  key: JWT_SECRET
+            - name: JWT_ACCESS_EXPIRATION
+              valueFrom:
+                secretKeyRef:
+                  name: reservation-service-secrets
+                  key: JWT_ACCESS_EXPIRATION
+            - name: JWT_REFRESH_EXPIRATION
+              valueFrom:
+                secretKeyRef:
+                  name: reservation-service-secrets
+                  key: JWT_REFRESH_EXPIRATION
+            - name: EMAIL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: reservation-service-secrets
+                  key: EMAIL_USERNAME
+            - name: EMAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: reservation-service-secrets
+                  key: EMAIL_PASSWORD
+            - name: EMAIL_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: reservation-service-secrets
+                  key: EMAIL_HOST
+            - name: EMAIL_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: reservation-service-secrets
+                  key: EMAIL_PORT
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: reservation-service-secrets
+                  key: DB_URL
+            - name: FRONTEND_URL
+              valueFrom:
+                secretKeyRef:
+                  name: reservation-service-secrets
+                  key: FRONTEND_URL
+            - name: SERVICES_AUTH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: reservation-service-secrets
+                  key: SERVICES_AUTH_URL
+            - name: SERVICES_CATALOG_URL
+              valueFrom:
+                secretKeyRef:
+                  name: reservation-service-secrets
+                  key: SERVICES_CATALOG_URL
+            - name: SERVICES_SCHEDULE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: reservation-service-secrets
+                  key: SERVICES_SCHEDULE_URL
+          # Probes disabled - actuator health is secured by Spring Security
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reservation-service
+spec:
+  selector:
+    app: reservation-service
+  ports:
+    - port: 8084
+      targetPort: 8084
+  type: ClusterIP
