@@ -1,0 +1,17 @@
+# ========================================
+# ServiceMonitor for Prometheus
+# ========================================
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: reservation-service-monitor
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: reservation-service
+  endpoints:
+    - port: "8084"
+      path: /actuator/prometheus
+      interval: 15s
