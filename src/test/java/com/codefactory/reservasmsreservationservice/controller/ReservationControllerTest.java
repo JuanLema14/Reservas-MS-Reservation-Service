@@ -132,8 +132,7 @@ class ReservationControllerTest {
             // Then
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isNotNull();
-            assertThat(response.getBody().getContent()).isPresent();
-            assertThat(response.getBody().getContent().get().getIdReserva()).isEqualTo(reservaId);
+            assertThat(response.getBody().getContent()).isEqualTo(reservaResponse);
         }
     }
 
@@ -294,7 +293,7 @@ class ReservationControllerTest {
                     .thenReturn(reservaResponse);
 
             // When
-            ResponseEntity<EntityModel<ReservationResponseDTO>> response = 
+            ResponseEntity<ReservationResponseDTO> response = 
                     reservationController.cancelReservation(userDetails, reservaId, request);
 
             // Then
