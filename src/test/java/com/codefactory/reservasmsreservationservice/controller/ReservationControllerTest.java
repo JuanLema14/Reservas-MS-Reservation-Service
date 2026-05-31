@@ -15,6 +15,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -105,11 +107,12 @@ class ReservationControllerTest {
             when(reservationService.createReservation(eq(clienteId), any())).thenReturn(reservaResponse);
 
             // When
-            ResponseEntity<ReservationResponseDTO> response = reservationController.createReservation(userDetails, request);
+            ResponseEntity<EntityModel<ReservationResponseDTO>> response = reservationController.createReservation(userDetails, request);
 
             // Then
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
             assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().getContent()).isNotNull();
         }
     }
 
@@ -124,12 +127,13 @@ class ReservationControllerTest {
             when(reservationService.getReservationById(reservaId)).thenReturn(reservaResponse);
 
             // When
-            ResponseEntity<ReservationResponseDTO> response = reservationController.getReservationById(reservaId);
+            ResponseEntity<EntityModel<ReservationResponseDTO>> response = reservationController.getReservationById(reservaId);
 
             // Then
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isNotNull();
-            assertThat(response.getBody().getIdReserva()).isEqualTo(reservaId);
+            assertThat(response.getBody().getContent()).isPresent();
+            assertThat(response.getBody().getContent().get().getIdReserva()).isEqualTo(reservaId);
         }
     }
 
@@ -153,13 +157,13 @@ class ReservationControllerTest {
                     .thenReturn(listResponse);
 
             // When
-            ResponseEntity<ReservationListResponseDTO> response = 
+            ResponseEntity<CollectionModel<EntityModel<ReservationResponseDTO>>> response = 
                     reservationController.getMyReservations(userDetails, null, 0, 10);
 
             // Then
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isNotNull();
-            assertThat(response.getBody().getTotal()).isEqualTo(1);
+            assertThat(response.getBody().getContent()).hasSize(1);
         }
     }
 
@@ -187,11 +191,13 @@ class ReservationControllerTest {
                     .thenReturn(listResponse);
 
             // When
-            ResponseEntity<ReservationListResponseDTO> response = 
+            ResponseEntity<CollectionModel<EntityModel<ReservationResponseDTO>>> response = 
                     reservationController.getProviderReservations(providerUserDetails, null, 0, 10);
 
             // Then
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().getContent()).hasSize(1);
         }
     }
 
@@ -212,11 +218,13 @@ class ReservationControllerTest {
                     .thenReturn(listResponse);
 
             // When
-            ResponseEntity<ReservationListResponseDTO> response = 
+            ResponseEntity<CollectionModel<EntityModel<ReservationResponseDTO>>> response = 
                     reservationController.getEmployeeReservations(empleadoId, null, 0, 10);
 
             // Then
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().getContent()).hasSize(1);
         }
     }
 
@@ -236,11 +244,12 @@ class ReservationControllerTest {
                     .thenReturn(reservaResponse);
 
             // When
-            ResponseEntity<ReservationResponseDTO> response = 
+            ResponseEntity<EntityModel<ReservationResponseDTO>> response = 
                     reservationController.updateReservation(userDetails, reservaId, request);
 
             // Then
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
         }
     }
 
@@ -260,11 +269,12 @@ class ReservationControllerTest {
                     .thenReturn(reservaResponse);
 
             // When
-            ResponseEntity<ReservationResponseDTO> response = 
+            ResponseEntity<EntityModel<ReservationResponseDTO>> response = 
                     reservationController.changeReservationStatus(reservaId, request);
 
             // Then
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
         }
     }
 
@@ -284,11 +294,12 @@ class ReservationControllerTest {
                     .thenReturn(reservaResponse);
 
             // When
-            ResponseEntity<ReservationResponseDTO> response = 
+            ResponseEntity<EntityModel<ReservationResponseDTO>> response = 
                     reservationController.cancelReservation(userDetails, reservaId, request);
 
             // Then
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
         }
     }
 }
