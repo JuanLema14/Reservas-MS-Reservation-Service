@@ -15,6 +15,9 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,7 +25,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 /**
  * REST Controller para gestión de reservas.
@@ -49,13 +56,18 @@ public class ReservationController {
             @ApiResponse(responseCode = "409", description = "Horario no disponible")
     })
     @PreAuthorize("hasRole('CLIENTE') or hasRole('ADMIN')")
-    public ResponseEntity<ReservationResponseDTO> createReservation(
+    public ResponseEntity<EntityModel<ReservationResponseDTO>> createReservation(
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody CreateReservationRequestDTO request) {
-        
+
         UUID clienteId = extractUserId(userDetails);
         ReservationResponseDTO reserva = reservationService.createReservation(clienteId, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(reserva);
+
+        EntityModel<ReservationResponseDTO> model = EntityModel.of(reserva,
+                linkTo(methodOn(ReservationController.class).getReservationById(reserva.getIdReserva())).withSelfRel(),
+                linkTo(methodOn(ReservationController.class).getMyReservations(null, null, 0, 10)).withRel("my-reservations"));
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(model);
     }
 
     // ==================== CONSULTAR RESERVAS ====================
@@ -68,10 +80,15 @@ public class ReservationController {
             @ApiResponse(responseCode = "404", description = "Reserva no encontrada"),
             @ApiResponse(responseCode = "403", description = "Acceso denegado")
     })
-    public ResponseEntity<ReservationResponseDTO> getReservationById(
+    public ResponseEntity<EntityModel<ReservationResponseDTO>> getReservationById(
             @PathVariable UUID id) {
         ReservationResponseDTO reserva = reservationService.getReservationById(id);
-        return ResponseEntity.ok(reserva);
+
+        EntityModel<ReservationResponseDTO> model = EntityModel.of(reserva,
+                linkTo(methodOn(ReservationController.class).getReservationById(id)).withSelfRel(),
+                linkTo(methodOn(ReservationController.class).getMyReservations(null, null, 0, 10)).withRel("my-reservations"));
+
+        return ResponseEntity.ok(model);
     }
 
     @GetMapping("/my")
@@ -82,17 +99,26 @@ public class ReservationController {
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @PreAuthorize("hasRole('CLIENTE') or hasRole('ADMIN')")
-    public ResponseEntity<ReservationListResponseDTO> getMyReservations(
+    public ResponseEntity<CollectionModel<EntityModel<ReservationResponseDTO>>> getMyReservations(
             @AuthenticationPrincipal UserDetails userDetails,
             @Parameter(description = "Filtrar por estado (PENDIENTE, CONFIRMADA, etc.)")
             @RequestParam(required = false) String estado,
             @RequestParam(defaultValue = "0") int pagina,
             @RequestParam(defaultValue = "10") int tamanio) {
-        
+
         UUID clienteId = extractUserId(userDetails);
-        ReservationListResponseDTO reservas = reservationService.getReservationsByClient(
+        ReservationListResponseDTO listDTO = reservationService.getReservationsByClient(
                 clienteId, estado, pagina, tamanio);
-        return ResponseEntity.ok(reservas);
+
+        List<EntityModel<ReservationResponseDTO>> models = listDTO.getReservas().stream()
+                .map(r -> EntityModel.of(r,
+                        linkTo(methodOn(ReservationController.class).getReservationById(r.getIdReserva())).withSelfRel()))
+                .collect(Collectors.toList());
+
+        Link selfLink = linkTo(methodOn(ReservationController.class)
+                .getMyReservations(null, null, pagina, tamanio)).withSelfRel();
+
+        return ResponseEntity.ok(CollectionModel.of(models, selfLink));
     }
 
     @GetMapping("/provider")
@@ -104,16 +130,25 @@ public class ReservationController {
             @ApiResponse(responseCode = "403", description = "Solo proveedores o admins")
     })
     @PreAuthorize("hasRole('PROVEEDOR') or hasRole('ADMIN')")
-    public ResponseEntity<ReservationListResponseDTO> getProviderReservations(
+    public ResponseEntity<CollectionModel<EntityModel<ReservationResponseDTO>>> getProviderReservations(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(required = false) String estado,
             @RequestParam(defaultValue = "0") int pagina,
             @RequestParam(defaultValue = "10") int tamanio) {
-        
+
         UUID proveedorId = extractUserId(userDetails);
-        ReservationListResponseDTO reservas = reservationService.getReservationsByProvider(
+        ReservationListResponseDTO listDTO = reservationService.getReservationsByProvider(
                 proveedorId, estado, pagina, tamanio);
-        return ResponseEntity.ok(reservas);
+
+        List<EntityModel<ReservationResponseDTO>> models = listDTO.getReservas().stream()
+                .map(r -> EntityModel.of(r,
+                        linkTo(methodOn(ReservationController.class).getReservationById(r.getIdReserva())).withSelfRel()))
+                .collect(Collectors.toList());
+
+        Link selfLink = linkTo(methodOn(ReservationController.class)
+                .getProviderReservations(null, null, pagina, tamanio)).withSelfRel();
+
+        return ResponseEntity.ok(CollectionModel.of(models, selfLink));
     }
 
     @GetMapping("/employee/{employeeId}")
@@ -125,15 +160,24 @@ public class ReservationController {
             @ApiResponse(responseCode = "403", description = "Acceso denegado")
     })
     @PreAuthorize("hasAnyRole('PROVEEDOR', 'ADMIN')")
-    public ResponseEntity<ReservationListResponseDTO> getEmployeeReservations(
+    public ResponseEntity<CollectionModel<EntityModel<ReservationResponseDTO>>> getEmployeeReservations(
             @PathVariable UUID employeeId,
             @RequestParam(required = false) String estado,
             @RequestParam(defaultValue = "0") int pagina,
             @RequestParam(defaultValue = "10") int tamanio) {
-        
-        ReservationListResponseDTO reservas = reservationService.getReservationsByEmployee(
+
+        ReservationListResponseDTO listDTO = reservationService.getReservationsByEmployee(
                 employeeId, estado, pagina, tamanio);
-        return ResponseEntity.ok(reservas);
+
+        List<EntityModel<ReservationResponseDTO>> models = listDTO.getReservas().stream()
+                .map(r -> EntityModel.of(r,
+                        linkTo(methodOn(ReservationController.class).getReservationById(r.getIdReserva())).withSelfRel()))
+                .collect(Collectors.toList());
+
+        Link selfLink = linkTo(methodOn(ReservationController.class)
+                .getEmployeeReservations(employeeId, null, pagina, tamanio)).withSelfRel();
+
+        return ResponseEntity.ok(CollectionModel.of(models, selfLink));
     }
 
     // ==================== ACTUALIZAR RESERVA ====================
@@ -149,14 +193,18 @@ public class ReservationController {
             @ApiResponse(responseCode = "409", description = "Horario no disponible")
     })
     @PreAuthorize("hasRole('CLIENTE') or hasRole('ADMIN')")
-    public ResponseEntity<ReservationResponseDTO> updateReservation(
+    public ResponseEntity<EntityModel<ReservationResponseDTO>> updateReservation(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable UUID id,
             @Valid @RequestBody UpdateReservationRequestDTO request) {
-        
+
         UUID clienteId = extractUserId(userDetails);
         ReservationResponseDTO reserva = reservationService.updateReservation(clienteId, id, request);
-        return ResponseEntity.ok(reserva);
+
+        EntityModel<ReservationResponseDTO> model = EntityModel.of(reserva,
+                linkTo(methodOn(ReservationController.class).getReservationById(id)).withSelfRel());
+
+        return ResponseEntity.ok(model);
     }
 
     @PatchMapping("/{id}/status")
@@ -169,12 +217,16 @@ public class ReservationController {
             @ApiResponse(responseCode = "404", description = "Reserva no encontrada")
     })
     @PreAuthorize("hasAnyRole('PROVEEDOR', 'ADMIN')")
-    public ResponseEntity<ReservationResponseDTO> changeReservationStatus(
+    public ResponseEntity<EntityModel<ReservationResponseDTO>> changeReservationStatus(
             @PathVariable UUID id,
             @Valid @RequestBody ChangeReservationStatusRequestDTO request) {
-        
+
         ReservationResponseDTO reserva = reservationService.changeReservationStatus(id, request);
-        return ResponseEntity.ok(reserva);
+
+        EntityModel<ReservationResponseDTO> model = EntityModel.of(reserva,
+                linkTo(methodOn(ReservationController.class).getReservationById(id)).withSelfRel());
+
+        return ResponseEntity.ok(model);
     }
 
     // ==================== CANCELAR RESERVA ====================
@@ -193,7 +245,7 @@ public class ReservationController {
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable UUID id,
             @RequestBody(required = false) CancelReservationRequestDTO request) {
-        
+
         UUID clienteId = extractUserId(userDetails);
         ReservationResponseDTO reserva = reservationService.cancelReservation(clienteId, id, request);
         return ResponseEntity.ok(reserva);
