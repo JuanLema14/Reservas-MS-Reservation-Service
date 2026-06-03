@@ -1,12 +1,12 @@
 # Plataforma de Reservas de Servicios - MS-Reservation-Service
 
 [![CI/CD Pipeline](https://github.com/Isa-Bedoya-UdeA/Reservas-MS-Reservation-Service/actions/workflows/build.yml/badge.svg)](https://github.com/Isa-Bedoya-UdeA/Reservas-MS-Reservation-Service/actions/workflows/build.yml)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Isa-Bedoya-UdeA_Reservas-MS-Reservation-Service&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Isa-Bedoya-UdeA_Reservas-MS-Reservation-Service)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Isa-Bedoya-UdeA_Reservas-MS-Reservation-Service&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Isa-Bedoya-UdeA_Reservas-MS-Reservation-Service)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Isa-Bedoya-UdeA_Reservas-MS-Reservation-Service&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Isa-Bedoya-UdeA_Reservas-MS-Reservation-Service)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Isa-Bedoya-UdeA_Reservas-MS-Reservation-Service&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Isa-Bedoya-UdeA_Reservas-MS-Reservation-Service)
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=Isa-Bedoya-UdeA_Reservas-MS-Reservation-Service&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=Isa-Bedoya-UdeA_Reservas-MS-Reservation-Service)
-[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=Isa-Bedoya-UdeA_Reservas-MS-Reservation-Service&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=Isa-Bedoya-UdeA_Reservas-MS-Reservation-Service)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=JuanLema14_Reservas-MS-Reservation-Service&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=JuanLema14_Reservas-MS-Reservation-Service)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=JuanLema14_Reservas-MS-Reservation-Service&metric=bugs)](https://sonarcloud.io/summary/new_code?id=JuanLema14_Reservas-MS-Reservation-Service)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=JuanLema14_Reservas-MS-Reservation-Service&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=JuanLema14_Reservas-MS-Reservation-Service)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=JuanLema14_Reservas-MS-Reservation-Service&metric=coverage)](https://sonarcloud.io/summary/new_code?id=JuanLema14_Reservas-MS-Reservation-Service)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=JuanLema14_Reservas-MS-Reservation-Service&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=JuanLema14_Reservas-MS-Reservation-Service)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=JuanLema14_Reservas-MS-Reservation-Service&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=JuanLema14_Reservas-MS-Reservation-Service)
 
 ## Descripción
 

@@ -46,8 +46,8 @@ jobs:
         run: |
           mvn -B verify sonar:sonar \
             -Dspring.profiles.active=test \
-            -Dsonar.projectKey=Isa-Bedoya-UdeA_Reservas-MS-Reservation-Service \
-            -Dsonar.organization=isa-bedoya-udea \
+            -Dsonar.projectKey=JuanLema14_Reservas-MS-Reservation-Service \
+            -Dsonar.organization=juanlema14 \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.token=$SONAR_TOKEN \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
