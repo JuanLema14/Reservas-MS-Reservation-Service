@@ -38,6 +38,10 @@
         <sonar.projectKey>Isa-Bedoya-UdeA_Reservas-MS-Reservation-Service</sonar.projectKey>
         <sonar.organization>isa-bedoya-udea</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+        <sonar.exclusions>**/config/**,**/dto/**,**/entity/**,**/mapper/**,**/security/Jwt*.java</sonar.exclusions>
+        <sonar.coverage.exclusions>**/config/**,**/dto/**,**/entity/**,**/mapper/**,**/security/Jwt*.java</sonar.coverage.exclusions>
     </properties>
     <dependencies>
         <!-- Spring Boot Starters -->
